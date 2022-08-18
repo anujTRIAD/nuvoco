@@ -1,0 +1,105 @@
+<div class="content-wrapper">
+	<section class="content-header">
+		<a href="<?php echo base_url('reports/add'); ?>" class="pull-right btn btn-info"><i class="fa fa-plus"></i> Add Reports</a>
+		<a href="<?php echo base_url('reports/download_stores'); ?>" style="margin-right: 10px" class="pull-right btn btn-primary"><i class="fa fa-download"></i> Download</a>
+		<h1><?php echo $page_title; ?></h1>
+	</section>
+
+	<section class="content">
+		<?php echo get_flashdata('message'); ?>
+		<div class="box">
+			<div class="box-body">
+			<div class="col-xs-12 table-responsive" style="margin-top: 30px;">
+				<table id="reports_table" class="table table-striped table-bordered" data-page-length='10'>
+					<thead>
+						<tr>
+							<th>Role</th>
+							<th>Zone</th>
+							<th>State</th>
+							<th>Name</th>
+							<th>Email id</th>
+							<th>Contact</th>
+							<th>Username</th>
+							<th>Status</th>
+							<th>Action</th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php if( is_array($users) && count($users) > 0 ) :?>
+						<?php foreach( $users as $user ) : ?>
+						<tr>
+							<td><?php echo $user['name']; ?></td>
+							<td><?php echo $user['username']; ?></td>
+							<td><?php echo $user['role']; ?></td>
+							<td><?php echo $user['phone']; ?></td>
+							<td><?php echo $user['username']; ?></td>
+							<td><?php echo $user['role']; ?></td>
+							<td><?php echo $user['phone']; ?></td> 
+							<td class="center">
+								<div class="onoffswitch">
+									<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch<?php echo custom_encode($user['id']); ?>" data-id="<?php echo custom_encode($user['id']); ?>" <?php echo ($user['status']=='Approved'?'checked="checked"':''); ?>>
+									<label class="onoffswitch-label" for="myonoffswitch<?php echo custom_encode($user['id']); ?>">
+										<span class="onoffswitch-inner"></span>
+										<span class="onoffswitch-switch"></span>
+									</label>
+								</div>
+							</td>
+							<td >
+								<a href="<?php echo base_url('reports/view/'.custom_encode($user['id'])); ?>" class="btn btn-primary btn-sm" title="View"><i class="fa fa-eye "></i></a> 
+								<!-- <?php //if( $user['role']=='manager' ){ ?>
+								<a href="<?php //echo base_url('users/login/'.custom_encode($user['id'])); ?>" class="btn bg-olive btn-sm"><i class="fa fa-sign-in"></i> Login</a>
+								<?php //} ?> -->
+							</td>
+						</tr>
+					<?php endforeach; ?>
+					<?php endif; ?>
+					</tbody>
+				</table>
+			</div>	
+			</div>
+		</div>
+		
+	</section>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function($) {
+	var datatable = $('#reports_table').DataTable({
+		"order": [],
+		"paging": true,
+		"lengthChange": true,
+		"searching": true,
+		"info": true,
+		"autoWidth": false,
+		language: {
+        	searchPlaceholder: "Search Any Field"
+    	}
+	});
+});
+
+// changing active status
+var onoffswitch_ajax = false;
+$('#reports_table').on("change", '.onoffswitch-checkbox', function() {
+    var chkbox = $(this);
+    var active = '';
+    var id = chkbox.data('id');    chkbox.parent().css({'opacity':'0.4'})
+
+    var value = (this.checked?'Approved':'Inactive'); 
+    chkbox.attr({'disabled':'disabled'});
+
+    if( !onoffswitch_ajax ) {
+        onoffswitch_ajax = true;
+        $.ajax({
+            url: "<?php echo base_url('reports/status'); ?>",
+            type: "POST",
+            data: "id="+id+"&value="+value+"&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>",
+                success: function(response) {
+                // console.log(response);
+                onoffswitch_ajax = false;
+                chkbox.removeAttr('disabled');
+                chkbox.parent().css({'opacity':'1'})
+            }
+        });
+    }
+});
+</script>

@@ -1,0 +1,107 @@
+<style type="text/css">
+table.dataTable thead .sorting {
+    background-image: none;
+}
+table.dataTable thead .sorting_asc {
+    background-image: none;
+}
+table.dataTable thead .sorting_desc {
+    background-image: none;
+}
+</style>
+<div class="content-wrapper">
+	<section class="content-header">		
+    <a href="<?php echo base_url('element/download'); ?>" class="pull-right btn btn-info" style="margin-right: 20px;"><i class="fa fa-download"></i> Download</a>
+		
+		<a href="<?php echo base_url('vendor/upload_csv'); ?>" style="margin-right: 10px" class="pull-right btn btn-success"><i class="fa fa-upload"></i> Upload Element</a> 
+    <a style="margin-right: 10px;" href="<?php echo base_url('element/add'); ?>" class="pull-right btn btn-primary"><i class="fa fa-plus"></i> Add Element</a>
+		<h1><?php echo $page_title; ?></h1>
+	</section>
+
+	<section class="content">
+		<?php echo get_flashdata('message'); ?>
+		<div class="box">  
+			<div class="box-body"> 
+			<div class="col-xs-12 table-responsive" style="margin-top: 30px;">
+				<table id="element_table" class="table table-striped table-bordered" data-page-length='10'>
+					<thead>
+						<tr>
+							<th>Element ID</th>
+							<th>Element Name</th>
+							<th>Element Type</th>  
+							<th>Action</th>
+						</tr>
+					</thead>
+          <tbody>
+            <?php if( is_array($users) && count($users) > 0 ) :?>
+            <?php foreach( $users as $user ) : ?>
+            <tr>
+              <td><?php echo $user['name']; ?></td>
+              <td><?php echo $user['username']; ?></td>
+              <td><?php echo $user['role']; ?></td> 
+              <!-- <td class="center">
+                <div class="onoffswitch">
+                  <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch<?php //echo custom_encode($user['id']); ?>" data-id="<?php //echo custom_encode($user['id']); ?>" <?php //echo ($user['status']=='Approved'?'checked="checked"':''); ?>>
+                  <label class="onoffswitch-label" for="myonoffswitch<?php //echo custom_encode($user['id']); ?>">
+                    <span class="onoffswitch-inner"></span>
+                    <span class="onoffswitch-switch"></span>
+                  </label>
+                </div>
+              </td> -->
+              <td >
+                <a href="<?php echo base_url('reports/view/'.custom_encode($user['id'])); ?>" class="btn btn-primary btn-sm" title="View"><i class="fa fa-eye "></i></a>  
+              </td>
+            </tr>
+          <?php endforeach; ?>
+          <?php endif; ?>
+          </tbody>
+				</table>
+			</div>	
+			</div>
+		</div>
+		
+	</section>
+</div>
+<script src="https://vmxpro.com/exide_dev/assets/chosen/chosen.js"></script>
+<script type="text/javascript">
+$(document).ready(function($) {
+  var datatable = $('#element_table').DataTable({
+    "order": [],
+    "paging": true,
+    "lengthChange": true,
+    "searching": true,
+    "info": true,
+    "autoWidth": false,
+    language: {
+          searchPlaceholder: "Search Any Field"
+      }
+  });
+});
+
+// changing active status
+var onoffswitch_ajax = false;
+$('#element_table').on("change", '.onoffswitch-checkbox', function() {
+    var chkbox = $(this);
+    var active = '';
+    var id = chkbox.data('id');
+    var value = (this.checked?'Approved':'Inactive');
+    
+    chkbox.attr({'disabled':'disabled'});
+    chkbox.parent().css({'opacity':'0.4'})
+
+    if( !onoffswitch_ajax ) {
+        onoffswitch_ajax = true;
+        $.ajax({
+            url: "<?php echo base_url('element/status'); ?>",
+            type: "POST",
+            data: "id="+id+"&value="+value+"&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>",
+            success: function(response) {
+                // console.log(response);
+                onoffswitch_ajax = false;
+                chkbox.removeAttr('disabled');
+                chkbox.parent().css({'opacity':'1'})
+            }
+        });
+    }
+});
+</script>
